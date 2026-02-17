@@ -1,56 +1,68 @@
 
-import {useState,useRef,useEffect} from 'react'
-import ClaudeRecipe from './ClaudeRecipe.jsx'
-import  IngredientList from './IngredientList.jsx'
-import getRecipeFromHf from './ai.js'
-
+import { useState, useEffect } from "react"
 
 export default function Main() {
+
+    const [meme, setMeme] = useState({
+        topText: "One does not simply",
+        bottomText: "Walk into Mordor",
+        //the project main image url
+       imageUrl: "http://i.imgflip.com/1bij.jpg"
+
+    })
+    const [allMemes, setAllMemes] = useState([])
     
-
-    const [ingredients,setIngredients]=useState([])  
-    const [recipe,setRecipe]=useState('')
-    const recipeSection=useRef(null)
+    useEffect(() => {
+        // imgflip api thats used for the memes images
+        fetch("https://api.imgflip.com/get_memes")
+            .then(res => res.json())
+            .then(data => setAllMemes(data.data.memes))
+    }, [])
     
-
-    function handleSubmit(event) {
-         
-       event.preventDefault()    
-       // Create a new FormData object and with specification to the desired form using event.target
-       const formData = new FormData(event.target)
-       // Get the value of the field named 'ingredient' from the form data 
-       const ingredient = formData.get('ingredient')
-       setIngredients(prev=>[...prev,ingredient])
-       
-         event.target.reset() }
-
-  useEffect(()=>{
-    //recipeSection.current meaning recipeSection.current!==null
-      recipe!==''&&recipeSection.current?recipeSection.current.scrollIntoView({behavior:'smooth'}):null
-    
-    }
-    ,[recipe])       
-
-   async function  showRecipe(){
-       const generatedRecipe =await getRecipeFromHf(ingredients)
-        setRecipe(generatedRecipe)
+    function getMemeImage() {
+        const randomNumber = Math.floor(Math.random() * allMemes.length)
+        const newMemeUrl = allMemes[randomNumber].url
+        setMeme(prevMeme => ({
+            ...prevMeme,
+            imageUrl: newMemeUrl
+        }))
     }
     
-    
+    function handleChange(event) {
+        const {value, name} = event.target
+        setMeme(prevMeme => ({
+            ...prevMeme,
+            [name]: value
+        }))
+    }
+
     return (
-      
-    <main>
-        <form onSubmit={handleSubmit}>
-                <input type="text" placeholder="e.g. tomato" aria-label="Add Ingredient" name='ingredient'/>
-                    <button>Add Ingredient</button>
-                 </form>
-                   <IngredientList 
-                   ingredients={ingredients} 
-                   showRecipe={showRecipe}
-                  ref={recipeSection}
-                   />
+        <main>
+            <div className="form">
+                <label>Top Text
+                    <input
+                        type="text"
+                        placeholder="One does not simply"
+                        name="topText"
+                        onChange={handleChange}
+                    />
+                </label>
 
-                  {recipe?<ClaudeRecipe recipe={recipe}/>:null}     
-                        
-                                </main>
-                                 ) }
+                <label>Bottom Text
+                    <input
+                        type="text"
+                        placeholder="Walk into Mordor"
+                        name="bottomText"
+                        onChange={handleChange}
+                    />
+                </label>
+                <button onClick={getMemeImage}>Get a new meme image 🖼</button>
+            </div>
+            <div className="meme">
+                <img src={meme.imageUrl} />
+                <span className="top">{meme.topText}</span>
+                <span className="bottom">{meme.bottomText}</span>
+            </div>
+        </main>
+    )
+}

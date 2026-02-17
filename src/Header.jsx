@@ -1,11 +1,13 @@
-import './index.css'
-import chef from '/src/images/chef-claude-icon.png';
+
+import trollFace from "./images/troll-face.png"
 
 export default function Header() {
     return (
-        <div className="header">
-           <img src={chef} alt="Sorry" />
-           <h1>Chef Claude!</h1>
-        </div>
+        <header className="header">
+            <img 
+                src={trollFace} 
+            />
+            <h1>Meme Generator</h1>
+        </header>
     )
 }
